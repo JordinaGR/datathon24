@@ -1,0 +1,191 @@
+
+
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+int n, m;
+vector<string> t;
+string p;
+
+void gen(int i, int j) {
+  if (i >= n or j >= m) cout << p << endl;
+  else {
+    if (t[i][j] == '.' or t[i][j] == 'A') { p.push_back('A'); gen(i+1, j); p.pop_back(); }
+    if (t[i][j] == '.' or t[i][j] == 'D') { p.push_back('D'); gen(i, j+1); p.pop_back(); }
+  }
+}
+
+int main() {
+  while (cin >> n >> m) {
+    t = vector<string>(n);
+    for (auto& ti : t) cin >> ti;
+    gen(0, 0);
+    cout << string(10, '-') << endl;
+  }
+}
+
+
+********************
+
+
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+int n, m;
+vector<vector<int>> M;
+int bp, bc;
+vector<int> s, u, bs;
+
+void max_profit(int i, int p) {
+  if (i == n) {
+    if (bp < p) {
+      bp = p;
+      bs = s;
+      bc = 1;
+    }
+    else if (bp == p) ++bc;
+    return;
+  }
+
+  for (int j = 0; j < m; ++j)
+    if (not u[j]) {
+      u[j] = true;
+      s[i] = j;
+      max_profit(i + 1, p + M[i][j]);
+      u[j] = false;
+    }
+}
+
+int main() {
+  while (cin >> n >> m) {
+    M = vector<vector<int>>(n, vector<int>(m));
+    for (auto& Mi : M)
+      for (auto& Mij: Mi)
+        cin >> Mij;
+
+    s = vector<int>(n);
+    u = vector<int>(m, false);
+    bp = 0;
+    max_profit(0, 0);
+
+    cout << "benefici: " << bp << endl;
+    if (bc == 1)
+      for (int bsi : bs) cout << bsi + 1 << endl;
+    else cout << bc << " solucions" << endl;
+    cout << string(10, '-') << endl;
+  }
+}
+
+
+********************
+
+#include <iostream>
+#include <vector>
+using namespace std;
+
+
+using VC = vector<char>;
+using VVC = vector<VC>;
+using VD = vector<double>;
+using VVD = vector<VD>;
+
+
+double p;
+int n, m;
+VVC M;
+VVD R;
+
+
+// probabilitat de sortir si estem a (i, j)
+double f(int i, int j) {
+  if (i == n or j == m) return 1;
+  double& res = R[i][j];
+  if (res != -1) return res;
+  if (M[i][j] == 'X') return res = 0;
+  if (M[i][j] == 'D') return res = f(i, j + 1);
+  if (M[i][j] == 'A') return res = f(i + 1, j);
+  return res = p*f(i, j + 1) + (1 - p)*f(i + 1, j);
+}
+
+
+int main() {
+  cout.setf(ios::fixed);
+  cout.precision(4);
+
+  while (cin >> p >> n >> m) {
+    M = VVC(n, VC(m));
+    for (int i = 0; i < n; ++i)
+      for (int j = 0; j < m; ++j) cin >> M[i][j];
+
+    R = VVD(n, VD(m, -1));
+    cout << f(0, 0) << endl;
+  }
+}
+
+
+********************
+
+
+#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+
+using VI = vector<int>;
+using VVI = vector<VI>;
+
+
+int n, m;
+VVI M, R;
+
+
+// maxim benefici amb les dones i, i + 1, ... i els homes j, j + 1, ...
+int f(int i, int j) {
+  if (i == n or j == m) return 0;
+  int& res = R[i][j];
+  if (res != -1) return res;
+  return res = max({M[i][j] + f(i + 1, j + 1), f(i + 1, j), f(i, j + 1)});
+}
+
+
+void solucio(int i, int j) {
+  if (i == n) return;
+
+  if (j == m) {
+    cout << 0 << endl;
+    return solucio(i + 1, j);
+  }
+
+  int r1 = M[i][j] + f(i + 1, j + 1);
+  int r2 = f(i + 1, j);
+  int r3 = f(i, j + 1);
+  if (r1 > r2 and r1 > r3) {
+    cout << j + 1 << endl;
+    solucio(i + 1, j + 1);
+  }
+  else if (r2 > r3) {
+    cout << 0 << endl;
+    solucio(i + 1, j);
+  }
+  else solucio(i, j + 1);
+}
+
+
+int main() {
+  while (cin >> n >> m) {
+    M = VVI(n, VI(m));
+    for (int i = 0; i < n; ++i)
+      for (int j = 0; j < m; ++j) cin >> M[i][j];
+
+    R = VVI(n, VI(m, -1));
+    cout << "benefici: " << f(0, 0) << endl;
+    solucio(0, 0);
+    cout << string(10, '-') << endl;
+  }
+}
+
